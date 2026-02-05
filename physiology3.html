@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار فسلجة - خلايا الدم البيضاء</title>
+    <style>
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --bg-color: #f7f1e3;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--primary-color);
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            color: #2d3436;
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feedback.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            color: #831d1d;
+        }
+
+        .feedback.correct {
+            background-color: #f0fff4;
+            border-left: 5px solid var(--success-color);
+            color: #1a5336;
+        }
+
+        .next-btn {
+            margin-top: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .source-tag {
+            display: block;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #636e72;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header-info">
+        <div class="score-board">النتيجة الحالية: <span id="score">0</span> / 35</div>
+        <div id="progress" style="font-weight: bold; color: var(--primary-color);">السؤال 1</div>
+    </div>
+
+    <div id="quiz-body">
+        <div class="question-box">
+            <div id="question" class="question-text">Loading...</div>
+            <div id="options" class="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">انتقل للسؤال التالي ←</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2 style="color: var(--secondary-color);">اكتمل الاختبار بنجاح!</h2>
+        <p id="final-score" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <button onclick="location.reload()" class="next-btn" style="display: inline-block;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "White blood cells (WBCs) are also known as leukocytes.", a: "True", options: ["True", "False"], page: 2, info: "White blood cells (WBCs or leukocytes) are colorless blood cells that contain a distinct nucleus." },
+        { q: "Where are white blood cells produced?", a: "Bone marrow", options: ["Liver", "Spleen", "Bone marrow", "Heart"], page: 2, info: "They are produced in the bone marrow and are capable of circulating through the blood and tissues." },
+        { q: "WBCs are classified into two main types: Granulocytes and Agranulocytes.", a: "True", options: ["True", "False"], page: 2, info: "White blood cells (WBCs) are mainly classified into two types: 1. Granulocytes, 2. Agranulocytes." },
+        { q: "Which of these is NOT a granulocyte?", a: "Lymphocytes", options: ["Neutrophils", "Eosinophils", "Basophils", "Lymphocytes"], page: 2, info: "Granulocytes include Neutrophils, Eosinophils and Basophils. Lymphocytes are Agranulocytes." },
+        { q: "Agranulocytes lack granules in their cytoplasm.", a: "True", options: ["True", "False"], page: 2, info: "Agranulocytes... lack granules in their cytoplasm and help protect the body from pathogens." },
+        { q: "Neutrophils make up what percentage of WBCs?", a: "50-70%", options: ["10-20%", "50-70%", "1-4%", "20-25%"], page: 3, info: "Neutrophils: 50-70% of white blood cells." },
+        { q: "The absolute number of Neutrophils is:", a: "2500-7000", options: ["50-100", "200-800", "2500-7000", "1500-2500"], page: 3, info: "Neutrophils: The absolute number is 2500-7000." },
+        { q: "Neutrophils have a multi-lobed nucleus.", a: "True", options: ["True", "False"], page: 3, info: "Neutrophils: Nucleus multi-lobed (2 to 5 lobes)." },
+        { q: "Neutrophilia refers to an increase in the number of Neutrophils.", a: "True", options: ["True", "False"], page: 3, info: "Increase is called Neutrophilia, and decrease is called Neutropenia." },
+        { q: "Neutrophils are primarily involved in phagocytosis of bacteria.", a: "True", options: ["True", "False"], page: 3, info: "They function in phagocytosis of bacteria." },
+        { q: "Eosinophils make up what percentage of WBCs?", a: "1-4%", options: ["50-70%", "1-4%", "20-25%", "3-8%"], page: 3, info: "Eosinophils: 1-4% of white blood cells." },
+        { q: "The nucleus of an Eosinophil is typically:", a: "Bi-lobed (S shape)", options: ["Multi-lobed", "Bi-lobed (S shape)", "Round", "Kidney shape"], page: 3, info: "Eosinophils: Nucleus bi-lobed (S shape)." },
+        { q: "Eosinophils increase during allergic conditions and parasitic infections.", a: "True", options: ["True", "False"], page: 3, info: "Functions: Parasitic infections and allergic conditions (count increases)." },
+        { q: "Eosinopenia is the term for an increase in eosinophils.", a: "False", options: ["True", "False"], page: 3, info: "Increase is called Eosinophilia, and decrease is called Eosinopenia." },
+        { q: "Basophils are the most common type of WBC.", a: "False", options: ["True", "False"], page: 3, info: "Basophils: 0.5-1% of white blood cells (they are the rarest)." },
+        { q: "Basophils contain granules with histamine and serotonin.", a: "True", options: ["True", "False"], page: 4, info: "Molecules like histamine and serotonin make the content of the granules." },
+        { q: "The absolute number of Basophils is:", a: "50-100", options: ["50-100", "2500-7000", "1500-2500", "200-800"], page: 4, info: "Basophils: The absolute number is 50-100." },
+        { q: "Lymphocytes make up what percentage of WBCs?", a: "20-25%", options: ["1-4%", "20-25%", "3-8%", "50-70%"], page: 4, info: "Lymphocytes: 20-25% of white blood cells." },
+        { q: "Lymphocytes have a kidney-shaped nucleus.", a: "False", options: ["True", "False"], page: 4, info: "Lymphocytes: Nucleus round shape." },
+        { q: "Which cells mediate hereditary and acquired immunity?", a: "Lymphocytes", options: ["Neutrophils", "Monocytes", "Lymphocytes", "Basophils"], page: 4, info: "Lymphocytes (T and B cells)... mediate almost all defense incidents of the immune system." },
+        { q: "Monocytes make up what percentage of WBCs?", a: "3-8%", options: ["20-25%", "3-8%", "50-70%", "1-4%"], page: 4, info: "Monocytes: 3-8% of white blood cells." },
+        { q: "What is the shape of a Monocyte nucleus?", a: "Kidney shape", options: ["Round", "Multi-lobed", "Kidney shape", "S shape"], page: 4, info: "Monocytes: Nucleus kidney shape." },
+        { q: "Monocytes differentiate into macrophages.", a: "True", options: ["True", "False"], page: 4, info: "Monocytes: Differentiate into macrophage, phagocytosis is presentation of antigen." },
+        { q: "The absolute number of Monocytes is:", a: "200-800", options: ["50-100", "200-800", "1500-2500", "2500-7000"], page: 4, info: "Monocytes: The absolute number is 200-800." },
+        { q: "Relative count is the actual number of specific WBCs in a volume.", a: "False", options: ["True", "False"], page: 5, info: "Relative count is the percentage... Absolute count is the actual number." },
+        { q: "The formula for Relative count is (Number of specific WBC × 100) / Total WBCs.", a: "True", options: ["True", "False"], page: 5, info: "Relative count = (Number of a specific type of WBC × 100) / Total number of WBCS." },
+        { q: "Absolute count is usually expressed as cells per microliter (cells/µL).", a: "True", options: ["True", "False"], page: 5, info: "Absolute count... usually expressed as cells per microliter (cells/µL)." },
+        { q: "Neutropenia is a decrease in Neutrophils.", a: "True", options: ["True", "False"], page: 3, info: "decrease is called Neutropenia." },
+        { q: "Granulocytes play a role in innate immune responses.", a: "True", options: ["True", "False"], page: 2, info: "Granulocytes... play a crucial role in innate immune responses." },
+        { q: "B cells and T cells are types of Monocytes.", a: "False", options: ["True", "False"], page: 4, info: "Lymphocytes: (T and B cells)." },
+        { q: "The absolute number of Lymphocytes is:", a: "1500-2500", options: ["1500-2500", "200-800", "50-100", "2500-7000"], page: 4, info: "Lymphocytes: The absolute number is 1500-2500." },
+        { q: "Basophilia refers to an increase in Basophils.", a: "True", options: ["True", "False"], page: 4, info: "Increase is called Basophilia." },
+        { q: "White blood cells are colored cells.", a: "False", options: ["True", "False"], page: 2, info: "White blood cells (WBCs or leukocytes) are colorless blood cells." },
+        { q: "Eosinophil cytoplasm stains with acid dyes (Eosin).", a: "True", options: ["True", "False"], page: 3, info: "The cytoplasm is stain with acid dyes (Eosin); they are red-orange colure." },
+        { q: "Which cell presents antigens after phagocytosis?", a: "Monocytes", options: ["Neutrophils", "Basophils", "Monocytes", "Eosinophils"], page: 4, info: "Monocytes: Differentiate into macrophage, phagocytosis is presentation of antigen." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+
+    function initQuiz() {
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `السؤال ${currentQuestionIndex + 1} من 35`;
+        document.getElementById("question").innerText = qData.q;
+        
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        
+        qData.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.a);
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(selected, correct) {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById("feedback");
+        const optionsButtons = document.querySelectorAll(".option-btn");
+        
+        optionsButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            document.getElementById("score").innerText = score;
+            feedbackDiv.innerHTML = "<strong>Correct Answer! ✨</strong>";
+            feedbackDiv.className = "feedback correct";
+        } else {
+            feedbackDiv.innerHTML = `<strong>Wrong Answer ❌</strong><br>${qData.info}<br><span class="source-tag">المصدر: الملف التعليمي، صفحة رقم ${qData.page}</span>`;
+            feedbackDiv.className = "feedback wrong";
+        }
+
+        feedbackDiv.style.display = "block";
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-body").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        document.getElementById("final-score").innerText = `أحسنت! نتيجتك النهائية هي ${score} من 35`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

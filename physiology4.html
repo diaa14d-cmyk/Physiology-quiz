@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار فسلجة - تعداد RBC</title>
+    <style>
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --bg-color: #f7f1e3;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--primary-color);
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            color: #2d3436;
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feedback.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            color: #831d1d;
+        }
+
+        .feedback.correct {
+            background-color: #f0fff4;
+            border-left: 5px solid var(--success-color);
+            color: #1a5336;
+        }
+
+        .next-btn {
+            margin-top: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .source-tag {
+            display: block;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #636e72;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header-info">
+        <div class="score-board">النتيجة: <span id="score">0</span> / 35</div>
+        <div id="progress" style="font-weight: bold; color: var(--primary-color);">السؤال 1</div>
+    </div>
+
+    <div id="quiz-body">
+        <div class="question-box">
+            <div id="question" class="question-text">Loading...</div>
+            <div id="options" class="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">انتقل للسؤال التالي ←</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2 style="color: var(--secondary-color);">انتهى اختبار المحاضرة الرابعة!</h2>
+        <p id="final-score" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <button onclick="location.reload()" class="next-btn" style="display: inline-block;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "What is the normal range of RBCs in an adult male?", a: "4.8-7.2 million", options: ["3.8-5.5 million", "4.8-7.2 million", "4.9-5.5 million", "1.5-2.5 million"], page: 2, info: "Normal range of RBCs Adult: 4.8-7.2 million (male)." },
+        { q: "Erythrocytopenia is characterized by an increased RBC count.", a: "False", options: ["True", "False"], page: 2, info: "Erythrocytopenia or Erythropenia is characterized by a decreased red blood cell count." },
+        { q: "The condition of increased number of RBC is called Polycythemia.", a: "True", options: ["True", "False"], page: 3, info: "The condition of increased number of RBC is called polycythemia (Erythrocytosis)." },
+        { q: "Normal RBC count for children is 3.8-5.5 million.", a: "True", options: ["True", "False"], page: 2, info: "Children: 3.8-5.5 million." },
+        { q: "RBC count in pregnant women is usually slightly higher than normal.", a: "False", options: ["True", "False"], page: 2, info: "Pregnancy: slightly lower than normal adult values." },
+        { q: "A decrease in RBC count to less than 3.5 million/mm³ is called:", a: "Erythrocytopenia", options: ["Polycythemia", "Erythrocytosis", "Erythrocytopenia", "Leukocytosis"], page: 3, info: "Erythrocytopenia... (i.e. the Decline in the no. of RBC to less than 3.5 million/mm3)." },
+        { q: "Which of these is a materials used in the RBC count experiment?", a: "Hayem's solution", options: ["Methylene blue", "Hayem's solution", "70% Alcohol", "All of the above"], page: 3, info: "Materials: 1. Hemocytometer, 2. RBC pipette, 3. Hayem's solution, 4. Microscope, 5. Lancet & Cotton." },
+        { q: "The RBC pipette has a red bead in the bulb.", a: "True", options: ["True", "False"], page: 3, info: "The RBC pipette... has a red bead in the bulb for mixing." },
+        { q: "What is the name of the counting chamber used in this experiment?", a: "Hemocytometer", options: ["Centrifuge", "Hemocytometer", "Colorimeter", "Spectrometer"], page: 3, info: "1. Hemocytometer (Neubauer counting chamber)." },
+        { q: "In the procedure, blood is aspirated to which mark in the pipette?", a: "0.5", options: ["1.0", "11", "0.5", "101"], page: 4, info: "Aspirate blood to the mark 0.5." },
+        { q: "The diluting solution (Hayem's) is aspirated to which mark?", a: "101", options: ["0.5", "1.0", "11", "101"], page: 4, info: "Aspirate diluting Hayem's solution to the 101 mark." },
+        { q: "What is the final dilution ratio of blood in the RBC pipette?", a: "1:200", options: ["1:10", "1:20", "1:100", "1:200"], page: 4, info: "making 1:200 dilution of blood." },
+        { q: "You should allow blood to clot inside the pipette.", a: "False", options: ["True", "False"], page: 4, info: "Never allow the blood to clot inside the pipette." },
+        { q: "The zigzag pattern of counting ensures cells are not counted twice.", a: "True", options: ["True", "False"], page: 4, info: "The movement of the slide (zigzag pattern)... ensures that a cell is not counted more than once." },
+        { q: "Which objective lens is used to count the cells?", a: "40X", options: ["10X", "40X", "100X", "4X"], page: 4, info: "Use the 40X objective." },
+        { q: "Cells lying on the upper and right-hand lines should be counted.", a: "False", options: ["True", "False"], page: 4, info: "Include all cells lying on the lower and left lines... omit the cells on the upper and right hand lines." },
+        { q: "How many medium squares are used to count RBCs?", a: "5", options: ["4", "5", "9", "16"], page: 4, info: "Count the cells in 5 medium squares." },
+        { q: "Total small squares counted for RBC calculation is:", a: "80", options: ["16", "64", "80", "400"], page: 4, info: "i.e. 80 small squares, one at each corner and one in the center." },
+        { q: "Hayem's solution is used as a diluting fluid.", a: "True", options: ["True", "False"], page: 3, info: "3. Hayem's solution." },
+        { q: "The depth of the hemocytometer chamber is 0.100mm.", a: "True", options: ["True", "False"], page: 5, info: "According to the diagram, Depth (Tiefe) is 0.100mm." },
+        { q: "RBC count varies with age and sex.", a: "True", options: ["True", "False"], page: 2, info: "The number of RBCs varies with age, sex, disease and altitude." },
+        { q: "Anemia is a medical condition where RBC count increases.", a: "False", options: ["True", "False"], page: 3, info: "Medical condition in which a decrease in RBC count can be found is anemia." },
+        { q: "What is the calculation formula to find the total RBC count?", a: "N x 10000", options: ["N x 100", "N x 1000", "N x 10000", "N / 200"], page: 5, info: "Calculation: N x 50 x 200 = N x 10000." },
+        { q: "The 5 medium squares used are located at 4 corners and 1 center.", a: "True", options: ["True", "False"], page: 4, info: "Count the cells in 5 medium squares... one at each corner and one in the center." },
+        { q: "Polycythemia is characterized by a decrease in RBC count.", a: "False", options: ["True", "False"], page: 3, info: "The condition of increased number of RBC is called polycythemia." },
+        { q: "Normal RBC range for adult females is 4.9-5.5 million.", a: "True", options: ["True", "False"], page: 2, info: "4.9-5.5 million (female)." },
+        { q: "Wiping off blood adhering to the outer side of the pipette is necessary.", a: "True", options: ["True", "False"], page: 4, info: "2. Wipe off any blood adhering to its outer side." },
+        { q: "Hayem's solution preserves the shape of RBCs.", a: "True", options: ["True", "False"], page: 3, info: "Hayem's solution is a diluent used to count RBCs without lysing them." },
+        { q: "If blood gets beyond the 0.5 mark, you should discard it.", a: "False", options: ["True", "False"], page: 4, info: "If the blood gets beyond 0.5 marks tap the tip gently till the blood is exactly at the mark." },
+        { q: "Hemocytometer is also called Neubauer chamber.", a: "True", options: ["True", "False"], page: 3, info: "1. Hemocytometer (Neubauer counting chamber)." },
+        { q: "Aspirating blood to 0.5 and solution to 101 gives a 200x dilution.", a: "True", options: ["True", "False"], page: 4, info: "thus making 1:200 dilution of blood." },
+        { q: "Altitude does not affect the number of RBCs.", a: "False", options: ["True", "False"], page: 2, info: "The number of RBCs varies with age, sex, disease and altitude." },
+        { q: "Each of the 5 medium squares contains how many small squares?", a: "16", options: ["8", "16", "20", "25"], page: 4, info: "5 medium squares of 16 small square." },
+        { q: "Erythropenia is another name for Erythrocytopenia.", a: "True", options: ["True", "False"], page: 3, info: "Erythrocytopenia or Erythropenia." },
+        { q: "The sterile disposable lancet is used for the finger prick.", a: "True", options: ["True", "False"], page: 4, info: "1. With a sterile disposable lancet do small prick on the fingertip." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+
+    function initQuiz() {
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `السؤال ${currentQuestionIndex + 1} من 35`;
+        document.getElementById("question").innerText = qData.q;
+        
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        
+        qData.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.a);
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(selected, correct) {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById("feedback");
+        const optionsButtons = document.querySelectorAll(".option-btn");
+        
+        optionsButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            document.getElementById("score").innerText = score;
+            feedbackDiv.innerHTML = "<strong>Correct Answer! ✨</strong>";
+            feedbackDiv.className = "feedback correct";
+        } else {
+            feedbackDiv.innerHTML = `<strong>Wrong Answer ❌</strong><br>${qData.info}<br><span class="source-tag">المصدر: الملف التعليمي، صفحة رقم ${qData.page}</span>`;
+            feedbackDiv.className = "feedback wrong";
+        }
+
+        feedbackDiv.style.display = "block";
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-body").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        document.getElementById("final-score").innerText = `أحسنت! نتيجتك النهائية هي ${score} من 35`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

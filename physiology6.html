@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار فسلجة - فصائل الدم</title>
+    <style>
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --bg-color: #f7f1e3;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--primary-color);
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            color: #2d3436;
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feedback.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            color: #831d1d;
+        }
+
+        .feedback.correct {
+            background-color: #f0fff4;
+            border-left: 5px solid var(--success-color);
+            color: #1a5336;
+        }
+
+        .next-btn {
+            margin-top: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .source-tag {
+            display: block;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #636e72;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header-info">
+        <div class="score-board">النتيجة: <span id="score">0</span> / 35</div>
+        <div id="progress" style="font-weight: bold; color: var(--primary-color);">السؤال 1</div>
+    </div>
+
+    <div id="quiz-body">
+        <div class="question-box">
+            <div id="question" class="question-text">Loading...</div>
+            <div id="options" class="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">انتقل للسؤال التالي ←</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2 style="color: var(--secondary-color);">اكتمل اختبار فصائل الدم!</h2>
+        <p id="final-score" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <button onclick="location.reload()" class="next-btn" style="display: inline-block;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "The ABO blood group system depends on antigens on the surface of white blood cells.", a: "False", options: ["True", "False"], page: 2, info: "It depends on the presence or absence of an A or B antigen on the surface of red blood cells." },
+        { q: "If both A and B antigens are absent, the blood type is O.", a: "True", options: ["True", "False"], page: 2, info: "if both antigens are absent, you would end up with type O blood." },
+        { q: "What is the frequency of blood group O in the population?", a: "47%", options: ["41%", "9%", "47%", "3%"], page: 2, info: "O: 47%, A: 41%, B: 9%, AB: 3%." },
+        { q: "Agglutination is an antigen-antibody reaction that results in clumping.", a: "True", options: ["True", "False"], page: 3, info: "Agglutination reaction: it's an antigen-antibody reaction... resulting in visible clumping." },
+        { q: "Type A blood contains Anti-B antibodies in the plasma.", a: "True", options: ["True", "False"], page: 3, info: "Blood Group A has Antigen A and Antibody Anti-B." },
+        { q: "Which blood type is known as the Universal Donor?", a: "O negative", options: ["AB positive", "O negative", "A positive", "B negative"], page: 4, info: "O- can donate to all other groups (Universal Donor)." },
+        { q: "AB positive is the Universal Recipient.", a: "True", options: ["True", "False"], page: 4, info: "AB+ can receive blood from all groups (Universal Recipient)." },
+        { q: "The Rh factor is also known as the D antigen.", a: "True", options: ["True", "False"], page: 3, info: "The Rh factor... the most common is the D antigen." },
+        { q: "Rh positive persons are also called D-ve.", a: "False", options: ["True", "False"], page: 3, info: "The Rh +ve persons are also called D+ve." },
+        { q: "What percentage of people have blood type AB?", a: "3%", options: ["47%", "41%", "9%", "3%"], page: 2, info: "AB frequency is 3%." },
+        { q: "Type B blood contains Antigen B and Anti-A antibody.", a: "True", options: ["True", "False"], page: 3, info: "Blood Group B: Antigen B, Antibody Anti-A." },
+        { q: "Type AB blood has no antibodies in the plasma.", a: "True", options: ["True", "False"], page: 3, info: "Blood Group AB: Antigens A & B, No Antibodies." },
+        { q: "Type O blood has both Anti-A and Anti-B antibodies.", a: "True", options: ["True", "False"], page: 3, info: "Blood Group O: No Antigens, Antibodies Anti-A & Anti-B." },
+        { q: "What happens if Anti-A serum is added to Type A blood?", a: "Agglutination occurs", options: ["No reaction", "Agglutination occurs", "Blood turns blue", "Hemolysis only"], page: 4, info: "Agglutination with Anti-A means the blood has Antigen A." },
+        { q: "The D antigen is the most potent Rh antigen.", a: "True", options: ["True", "False"], page: 3, info: "D antigen... most common and antigenically, the most potent." },
+        { q: "A person with Rh-ve blood has Anti-D antibodies naturally without exposure.", a: "False", options: ["True", "False"], page: 3, info: "Rh antibodies (Anti-D) are generally not present naturally but develop after exposure." },
+        { q: "Which tool is used to mix blood with serum in the procedure?", a: "Toothpicks", options: ["Glass rod", "Toothpicks", "Lancet", "Pipette"], page: 4, info: "Materials: Toothpicks for mixing." },
+        { q: "How many drops of blood are needed for ABO and Rh typing on a slide?", a: "Three", options: ["One", "Two", "Three", "Four"], page: 4, info: "Place three drops of blood on the slide." },
+        { q: "In the procedure, blood is mixed with Anti-A, Anti-B, and Anti-D serums.", a: "True", options: ["True", "False"], page: 4, info: "Add Anti-A, Anti-B, and Anti-D (anti-Rh) serum." },
+        { q: "If clumping occurs only in the Anti-B circle, the blood group is:", a: "B", options: ["A", "B", "AB", "O"], page: 5, info: "Agglutination in Anti-B only indicates Group B." },
+        { q: "If no clumping occurs in Anti-A or Anti-B, the blood group is O.", a: "True", options: ["True", "False"], page: 5, info: "No agglutination in A or B indicates Group O." },
+        { q: "Clumping in Anti-D serum indicates the blood is Rh positive.", a: "True", options: ["True", "False"], page: 5, info: "Agglutination in Anti-D means Rh positive (+ve)." },
+        { q: "Rh negative blood can always receive Rh positive blood safely.", a: "False", options: ["True", "False"], page: 4, info: "Rh- recipients should generally only receive Rh- blood to avoid sensitization." },
+        { q: "Blood group A can receive from group B.", a: "False", options: ["True", "False"], page: 4, info: "A cannot receive from B due to Anti-B antibodies." },
+        { q: "Anti-D serum is used to determine the Rh factor.", a: "True", options: ["True", "False"], page: 4, info: "Anti-D (anti-Rh) serum." },
+        { q: "Which group is the second most common in the ABO system?", a: "A", options: ["O", "A", "B", "AB"], page: 2, info: "O (47%) is first, A (41%) is second." },
+        { q: "The inheritance of both A and B antigens results in group AB.", a: "True", options: ["True", "False"], page: 2, info: "If you inherited both types of antigens... type AB blood." },
+        { q: "The antibody of D antigen is called Anti-D antibody.", a: "True", options: ["True", "False"], page: 3, info: "The antibody of D antigen is called anti-D antibody." },
+        { q: "Type O- blood can be given to an AB+ recipient.", a: "True", options: ["True", "False"], page: 4, info: "O- is the universal donor." },
+        { q: "Antigens are located in the plasma.", a: "False", options: ["True", "False"], page: 2, info: "Antigens are on the surface of red blood cells." },
+        { q: "Agglutination with Anti-A and Anti-B means the group is AB.", a: "True", options: ["True", "False"], page: 5, info: "Clumping in both A and B indicates AB." },
+        { q: "Sterile lancets are used for the finger prick.", a: "True", options: ["True", "False"], page: 4, info: "Materials: Sterile blood lancet." },
+        { q: "If Anti-D does not cause clumping, the person is Rh negative.", a: "True", options: ["True", "False"], page: 5, info: "No clumping in Anti-D means Rh negative (-ve)." },
+        { q: "Mixing blood and serum should be done with different toothpicks for each.", a: "True", options: ["True", "False"], page: 4, info: "Using a separate toothpick for each drop to avoid cross-contamination." },
+        { q: "Blood grouping is essential for safe blood transfusions.", a: "True", options: ["True", "False"], page: 4, info: "Essential to match Donor and Recipient." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+
+    function initQuiz() {
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `السؤال ${currentQuestionIndex + 1} من 35`;
+        document.getElementById("question").innerText = qData.q;
+        
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        
+        qData.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.a);
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(selected, correct) {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById("feedback");
+        const optionsButtons = document.querySelectorAll(".option-btn");
+        
+        optionsButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            document.getElementById("score").innerText = score;
+            feedbackDiv.innerHTML = "<strong>Correct Answer! ✨</strong>";
+            feedbackDiv.className = "feedback correct";
+        } else {
+            feedbackDiv.innerHTML = `<strong>Wrong Answer ❌</strong><br>${qData.info}<br><span class="source-tag">المصدر: الملف التعليمي، صفحة رقم ${qData.page}</span>`;
+            feedbackDiv.className = "feedback wrong";
+        }
+
+        feedbackDiv.style.display = "block";
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-body").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        document.getElementById("final-score").innerText = `رائع! نتيجتك النهائية هي ${score} من 35`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار فسلجة - المجهر</title>
+    <style>
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --bg-color: #f7f1e3;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--primary-color);
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            color: #2d3436;
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feedback.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            color: #831d1d;
+        }
+
+        .feedback.correct {
+            background-color: #f0fff4;
+            border-left: 5px solid var(--success-color);
+            color: #1a5336;
+        }
+
+        .next-btn {
+            margin-top: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .source-tag {
+            display: block;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #636e72;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header-info">
+        <div class="score-board">النتيجة: <span id="score">0</span> / 35</div>
+        <div id="progress" style="font-weight: bold; color: var(--primary-color);">السؤال 1</div>
+    </div>
+
+    <div id="quiz-body">
+        <div class="question-box">
+            <div id="question" class="question-text">Loading...</div>
+            <div id="options" class="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">انتقل للسؤال التالي ←</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2 style="color: var(--secondary-color);">اكتمل اختبار المجهر!</h2>
+        <p id="final-score" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <button onclick="location.reload()" class="next-btn" style="display: inline-block;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "A microscope is an instrument designed to produce magnified images of small objects.", a: "True", options: ["True", "False"], page: 2, info: "Microscope is an instruments designed to produce magnified visual or photographic images of objects too small to be seen with the naked eye." },
+        { q: "The eyepiece (ocular) usually contains a 5X power lens.", a: "False", options: ["True", "False"], page: 2, info: "The eyepiece usually contains a 10X power lens." },
+        { q: "Which part of the microscope connects the body tube to the base?", a: "Arm", options: ["Nosepiece", "Arm", "Stage", "Diaphragm"], page: 2, info: "Arm: The arm connects the body tube to the base of the microscope." },
+        { q: "The 'Diopter Adjustment' is used to change focus for differences in vision between two eyes.", a: "True", options: ["True", "False"], page: 2, info: "Diopter Adjustment: Useful as a means to change focus on one eyepiece so as to correct for any difference in vision between your two eyes." },
+        { q: "The nosepiece (turret) is a rotating part that houses the objective lenses.", a: "True", options: ["True", "False"], page: 2, info: "Nosepiece (Turret): A rotating turret that houses the objective lenses." },
+        { q: "Where is the illuminator located in a microscope?", a: "Base", options: ["Head", "Stage", "Arm", "Base"], page: 2, info: "Base: The base supports the microscope and it's where illuminator is located." },
+        { q: "The stage is the flat platform where the slide is placed.", a: "True", options: ["True", "False"], page: 2, info: "Stage: The flat platform where the slide is placed." },
+        { q: "Which part adjusts the amount of light reaching the specimen?", a: "Iris diaphragm", options: ["Condenser", "Aperture", "Iris diaphragm", "Ocular lens"], page: 2, info: "Iris diaphragm: Adjusts the amount of light that reaches the specimen." },
+        { q: "The condenser gathers and focuses light onto the specimen.", a: "True", options: ["True", "False"], page: 4, info: "Condenser: Gathers and focuses light from the illuminator onto the specimen being viewed." },
+        { q: "Oil immersion lens is used because mineral oil has the same refractive index as glass.", a: "True", options: ["True", "False"], page: 4, info: "The oil is used because it has the same refractive index as glass." },
+        { q: "Oil immersion enhances the resolving power of the microscope.", a: "True", options: ["True", "False"], page: 4, info: "The use of oil in this way enhances the resolving power of the microscope." },
+        { q: "Which of these is NOT a type of light microscope?", a: "Scanning Electron Microscope", options: ["Bright-field", "Dark-field", "Phase-contrast", "Scanning Electron Microscope"], page: 5, info: "Types of Light Microscope: Bright-field, Dark-field, Phase-contrast, Fluorescence. SEM is an Electron microscope." },
+        { q: "A dissecting microscope is also called a stereo microscope.", a: "True", options: ["True", "False"], page: 5, info: "Dissecting Microscope (also called stereo microscope)." },
+        { q: "SEM stands for Scanning Electron Microscope.", a: "True", options: ["True", "False"], page: 5, info: "3. Scanning Electron Microscope (SEM)." },
+        { q: "TEM stands for Transmission Electron Microscope.", a: "True", options: ["True", "False"], page: 5, info: "4. Transmission Electron Microscope (TEM)." },
+        { q: "Diaphragm and Condenser are located below the stage.", a: "True", options: ["True", "False"], page: 4, info: "Based on the diagram, both are located under the mechanical stage." },
+        { q: "Fine adjustment is used for large movements to find the specimen.", a: "False", options: ["True", "False"], page: 4, info: "Coarse adjustment is for large movements; Fine adjustment is for precise focusing." },
+        { q: "The eyepiece is the lens you look into.", a: "True", options: ["True", "False"], page: 2, info: "Eyepiece (ocular): The lens that one looks into for see the specimen." },
+        { q: "One should carry the microscope by holding the arm and putting a hand under the base.", a: "True", options: ["True", "False"], page: 2, info: "One can hold the arm with on hand and put another hand under the base." },
+        { q: "The stage clips provide stability to the slides.", a: "True", options: ["True", "False"], page: 2, info: "Stage clips: Metal clips that hold the slide in place and provide stability." },
+        { q: "Objective lenses are selected by spinning the nosepiece.", a: "True", options: ["True", "False"], page: 2, info: "The viewer spins the nosepiece to select different objective lenses." },
+        { q: "Fluorescence is a type of light microscope.", a: "True", options: ["True", "False"], page: 5, info: "4. Fluorescence is listed under Light Microscope types." },
+        { q: "The body tube connects the eyepiece to the objective lenses.", a: "True", options: ["True", "False"], page: 2, info: "Body tube (Head): The body tube holds the eye piece and connects it to the objective lenses." },
+        { q: "Aperture is the hole in the stage through which light passes.", a: "True", options: ["True", "False"], page: 4, info: "Aperture is shown as the opening in the stage in the diagram." },
+        { q: "The On/off switch is located on the arm.", a: "False", options: ["True", "False"], page: 4, info: "On/off switch: This switch on the base of the microscope." },
+        { q: "Refractive index of air is the same as glass.", a: "False", options: ["True", "False"], page: 4, info: "Oil has the same refractive index as glass, preventing light bending as it passes through air." },
+        { q: "Compound microscope uses visible light.", a: "True", options: ["True", "False"], page: 5, info: "1. Compound Microscope is a type of light microscope." },
+        { q: "Bright-field is a common type of light microscopy.", a: "True", options: ["True", "False"], page: 5, info: "1. Bright-field is listed first under Light Microscope types." },
+        { q: "Mechanical stage allows precise movement of the slide.", a: "True", options: ["True", "False"], page: 4, info: "Mechanical stage and Stage controls are shown for slide movement." },
+        { q: "Brightness adjustment is usually found on the base.", a: "True", options: ["True", "False"], page: 4, info: "Brightness adjustment is shown on the base in the parts diagram." },
+        { q: "Diopter adjustment helps people with different vision in each eye.", a: "True", options: ["True", "False"], page: 2, info: "correct for any difference in vision between your two eyes." },
+        { q: "Immersion oil is placed between the lens and the slide.", a: "True", options: ["True", "False"], page: 4, info: "mineral oil is interposed between the lens and the slide." },
+        { q: "Specimens too small for the naked eye require a microscope.", a: "True", options: ["True", "False"], page: 2, info: "visual... images of objects too small to be seen with the naked eye." },
+        { q: "Objective lenses have different magnification powers.", a: "True", options: ["True", "False"], page: 2, info: "The viewer spins the nosepiece to select different objective lenses." },
+        { q: "The base contains the light source (illuminator).", a: "True", options: ["True", "False"], page: 2, info: "it's where illuminator is located." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+
+    function initQuiz() {
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `السؤال ${currentQuestionIndex + 1} من 35`;
+        document.getElementById("question").innerText = qData.q;
+        
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        
+        qData.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.a);
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(selected, correct) {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById("feedback");
+        const optionsButtons = document.querySelectorAll(".option-btn");
+        
+        optionsButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            document.getElementById("score").innerText = score;
+            feedbackDiv.innerHTML = "<strong>Correct Answer! ✨</strong>";
+            feedbackDiv.className = "feedback correct";
+        } else {
+            feedbackDiv.innerHTML = `<strong>Wrong Answer ❌</strong><br>${qData.info}<br><span class="source-tag">المصدر: المحاضرة 1، صفحة رقم ${qData.page}</span>`;
+            feedbackDiv.className = "feedback wrong";
+        }
+
+        feedbackDiv.style.display = "block";
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-body").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        document.getElementById("final-score").innerText = `رائع! نتيجتك النهائية هي ${score} من 35`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

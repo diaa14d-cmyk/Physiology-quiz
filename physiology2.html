@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار فسلجة - مسحة الدم</title>
+    <style>
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --bg-color: #f7f1e3;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--primary-color);
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            color: #2d3436;
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feedback.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            color: #831d1d;
+        }
+
+        .feedback.correct {
+            background-color: #f0fff4;
+            border-left: 5px solid var(--success-color);
+            color: #1a5336;
+        }
+
+        .next-btn {
+            margin-top: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .source-tag {
+            display: block;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #636e72;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header-info">
+        <div class="score-board">النتيجة الحالية: <span id="score">0</span> / 35</div>
+        <div id="progress" style="font-weight: bold; color: var(--primary-color);">السؤال 1</div>
+    </div>
+
+    <div id="quiz-body">
+        <div class="question-box">
+            <div id="question" class="question-text">Loading...</div>
+            <div id="options" class="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">انتقل للسؤال التالي ←</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2 style="color: var(--secondary-color);">اكتمل الاختبار بنجاح!</h2>
+        <p id="final-score" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <button onclick="location.reload()" class="next-btn" style="display: inline-block;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "What is the percentage of alcohol used for cleansing in blood film preparation?", a: "70%", options: ["50%", "70%", "95%", "100%"], page: 2, info: "The materials include 70% alcohol." },
+        { q: "Massage the finger for approximately 3-5 minutes to aid blood flow.", a: "True", options: ["True", "False"], page: 2, info: "Massage the finger five or six times... for approximately 3-5 minutes. This will aid in the blood flow." },
+        { q: "Alcohol residue on the finger may cause hemolysis of red cells.", a: "True", options: ["True", "False"], page: 2, info: "Alcohol residue on the finger may cause a sting sensation and hemolysis of the red cells." },
+        { q: "You should wipe the first drop of blood with gauze.", a: "True", options: ["True", "False"], page: 2, info: "Wipe the first drop of blood with gauze. This will remove any fluids or tissue that may contaminate the sample." },
+        { q: "Why is the first drop of blood wiped away?", a: "To remove contaminating fluids/tissue", options: ["To stop bleeding", "To remove contaminating fluids/tissue", "To increase flow", "To cool the finger"], page: 2, info: "This will remove any fluids or tissue that may contaminate the sample." },
+        { q: "Squeezing or milking the finger helps produce better test results.", a: "False", options: ["True", "False"], page: 2, info: "Do not squeeze or milk the finger, this may cause the sample to hemolysis creating erroneous test results." },
+        { q: "The 'Wedge Method' for blood smear is also known as:", a: "Two-Slide Method", options: ["Single-Slide Method", "Two-Slide Method", "Dip Method", "Cover-Slip Method"], page: 3, info: "Two-Slide Method (Wedge Method)" },
+        { q: "The spreader slide should be at what angle in front of the blood drop?", a: "30- to 35-degree", options: ["10- to 15-degree", "30- to 35-degree", "45- to 50-degree", "90-degree"], page: 3, info: "The end of a 'spreader' slide is brought to rest at a 30- to 35-degree angle." },
+        { q: "Blood smears should be allowed to air-dry as quickly as possible.", a: "True", options: ["True", "False"], page: 3, info: "The smear is placed in a slide-drying rack and allowed to air-dry as quickly as possible." },
+        { q: "What factor affects the length and thickness of the smear?", a: "All of the above", options: ["Size of blood drop", "Angle of spreader slide", "Speed of the smear", "All of the above"], page: 4, info: "The length and thickness of the smear are affected by: Size of drop, Angle of spreader, and Speed." },
+        { q: "Which of these is a commonly used blood stain?", a: "Wright's stain", options: ["Iodine", "Wright's stain", "Crystal Violet", "Safranin"], page: 4, info: "Two commonly used blood stains are Wright's stain and Giemsa stain." },
+        { q: "Methylene blue is an acid dye that gives a red color.", a: "False", options: ["True", "False"], page: 4, info: "methylene blue, a basic dye that gives a blue color to stained structures." },
+        { q: "Eosin gives a red-orange color to stained structures.", a: "True", options: ["True", "False"], page: 4, info: "eosin, an acid dye that gives a red-orange color to stained structures." },
+        { q: "Methanol used for fixation must contain acetone.", a: "False", options: ["True", "False"], page: 4, info: "Methanol without acetone to a fixative." },
+        { q: "What is the first step in the staining procedure?", a: "Dipping in pure methanol", options: ["Flooding with Giemsa", "Dipping in pure methanol", "Flushing with water", "Adding Eosin"], page: 4, info: "1. Dip the smear (2-3 dips) into pure methanol for fixation." },
+        { q: "How long should the slide be flooded with 5% Giemsa solution?", a: "20-30 minutes", options: ["1-2 minutes", "5-10 minutes", "20-30 minutes", "1 hour"], page: 4, info: "2. Flood the slide with 5% Giemsa stain solution for 20-30 minutes." },
+        { q: "The blood drop diameter for a smear should be about:", a: "2mm", options: ["1mm", "2mm", "5mm", "10mm"], page: 3, info: "Placing a small drop of blood about 2mm in diameter." },
+        { q: "Touching the slide surface with fingers is recommended.", a: "False", options: ["True", "False"], page: 2, info: "Allow the drop of blood to fall on the slide, without touching the surface of the slide with your fingers." },
+        { q: "Blood flow is aided by massaging the finger from tip to base.", a: "False", options: ["True", "False"], page: 2, info: "Gently massage the finger... from the base to the tip." },
+        { q: "The puncture should be deep enough to give free-flowing blood.", a: "True", options: ["True", "False"], page: 2, info: "4. The puncture should be deep enough to give free-flowing blood." },
+        { q: "Alcohol residue prevents the formation of rounded blood drops.", a: "True", options: ["True", "False"], page: 2, info: "Alcohol will also prevent formation of rounded drops of blood." },
+        { q: "The spreader slide is pushed to the left with a slow, jerky motion.", a: "False", options: ["True", "False"], page: 3, info: "spreader is lightly pushed to the left with a quick, steady motion." },
+        { q: "Giemsa stain is used for routine microscopic examination of blood.", a: "True", options: ["True", "False"], page: 4, info: "Two commonly used blood stains are Wright's stain and Giemsa stain for routine microscopic examination." },
+        { q: "Methylene blue is a basic dye.", a: "True", options: ["True", "False"], page: 4, info: "methylene blue, a basic dye." },
+        { q: "The fixation step in methanol takes about:", a: "30 seconds", options: ["5 seconds", "30 seconds", "5 minutes", "10 minutes"], page: 4, info: "leave to air dry for 30seconds after fixation." },
+        { q: "The final step before examination is flushing with tap water.", a: "True", options: ["True", "False"], page: 4, info: "3. Flush with tap water and leave to dry." },
+        { q: "A spreader slide is used to create a thick film of blood.", a: "False", options: ["True", "False"], page: 3, info: "to spread the blood into a thin film." },
+        { q: "The selected site for puncture should be free of edema.", a: "True", options: ["True", "False"], page: 2, info: "The selected site should be clean, and free from infection, edema, or skin disease." },
+        { q: "Air drying after alcohol cleansing is necessary.", a: "True", options: ["True", "False"], page: 2, info: "Cleanse the finger with an alcohol pad and allow to air dry." },
+        { q: "Hemolysis can cause erroneous test results.", a: "True", options: ["True", "False"], page: 2, info: "Do not squeeze... this may cause the sample to hemolysis creating erroneous test results." },
+        { q: "Staining materials include cotton or gauze.", a: "False", options: ["True", "False"], page: 2, info: "Cotton/gauze are listed under Finger Puncher materials, not specifically the staining dyes." },
+        { q: "One factor affecting quality is the speed of making the smear.", a: "True", options: ["True", "False"], page: 4, info: "The speed at which the smear is made is a factor." },
+        { q: "Wait 20-30 mins after flooding with Giemsa before washing.", a: "True", options: ["True", "False"], page: 4, info: "Flood... for 20-30 minutes. 3. Flush with tap water." },
+        { q: "Clean glass slides are required for blood smears.", a: "True", options: ["True", "False"], page: 2, info: "Materials: clean glass slide and cover slide." },
+        { q: "Eosin is a basic dye.", a: "False", options: ["True", "False"], page: 4, info: "eosin, an acid dye." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+
+    function initQuiz() {
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `السؤال ${currentQuestionIndex + 1} من 35`;
+        document.getElementById("question").innerText = qData.q;
+        
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        
+        qData.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.a);
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(selected, correct) {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById("feedback");
+        const optionsButtons = document.querySelectorAll(".option-btn");
+        
+        optionsButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            document.getElementById("score").innerText = score;
+            feedbackDiv.innerHTML = "<strong>Correct Answer! ✨</strong>";
+            feedbackDiv.className = "feedback correct";
+        } else {
+            feedbackDiv.innerHTML = `<strong>Wrong Answer ❌</strong><br>${qData.info}<br><span class="source-tag">المصدر: الملف التعليمي، صفحة رقم ${qData.page}</span>`;
+            feedbackDiv.className = "feedback wrong";
+        }
+
+        feedbackDiv.style.display = "block";
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-body").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        document.getElementById("final-score").innerText = `أحسنت! نتيجتك النهائية هي ${score} من 35`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

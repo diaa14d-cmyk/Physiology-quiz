@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار فسلجة - تقدير الهيموجلوبين</title>
+    <style>
+        :root {
+            --primary-color: #e84393;
+            --secondary-color: #6c5ce7;
+            --success-color: #00b894;
+            --error-color: #d63031;
+            --bg-color: #f7f1e3;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #quiz-container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--primary-color);
+        }
+
+        .score-board {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3436;
+        }
+
+        .options-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        button.option-btn {
+            background-color: #fff;
+            border: 2px solid var(--secondary-color);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-align: left;
+            color: #2d3436;
+        }
+
+        button.option-btn:hover:not([disabled]) {
+            background-color: var(--secondary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        button.option-btn:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            display: none;
+            text-align: left;
+            direction: ltr;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .feedback.wrong {
+            background-color: #fff5f5;
+            border-left: 5px solid var(--error-color);
+            color: #831d1d;
+        }
+
+        .feedback.correct {
+            background-color: #f0fff4;
+            border-left: 5px solid var(--success-color);
+            color: #1a5336;
+        }
+
+        .next-btn {
+            margin-top: 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.3);
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .source-tag {
+            display: block;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #636e72;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header-info">
+        <div class="score-board">النتيجة: <span id="score">0</span> / 35</div>
+        <div id="progress" style="font-weight: bold; color: var(--primary-color);">السؤال 1</div>
+    </div>
+
+    <div id="quiz-body">
+        <div class="question-box">
+            <div id="question" class="question-text">Loading...</div>
+            <div id="options" class="options-container"></div>
+        </div>
+        <div id="feedback" class="feedback"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">انتقل للسؤال التالي ←</button>
+    </div>
+
+    <div id="result-screen" class="result-screen">
+        <h2 style="color: var(--secondary-color);">انتهى اختبار المحاضرة الخامسة!</h2>
+        <p id="final-score" style="font-size: 1.8rem; font-weight: bold;"></p>
+        <button onclick="location.reload()" class="next-btn" style="display: inline-block;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Hemoglobin is an iron-containing oxygen transporter.", a: "True", options: ["True", "False"], page: 2, info: "Hemoglobin is the iron-containing oxygen transporter (metalloprotein) in the red blood cells." },
+        { q: "What gives blood its red color?", a: "Heme", options: ["Globin", "Heme", "Protoporphyrin", "Plasma"], page: 2, info: "To each of the four chains heme is attached... It gives red color to the blood." },
+        { q: "Normal Hb range for an adult male is:", a: "14-18 g/dl", options: ["12-16 g/dl", "14-18 g/dl", "13-20 g/dl", "10-12 g/dl"], page: 2, info: "Normal ranges: Male 14-18 g/dl." },
+        { q: "Neonates have a higher normal Hb range than adults.", a: "True", options: ["True", "False"], page: 2, info: "Normal ranges: Neonate 13-20 g/dl." },
+        { q: "Hemoglobin molecule consists of how many polypeptide chains?", a: "Four", options: ["Two", "Three", "Four", "Six"], page: 2, info: "Hemoglobin molecule is a tetramer consisting of two pairs of similar polypeptide chains." },
+        { q: "Heme is a complex of iron in ferrous form and protoporphyrin.", a: "True", options: ["True", "False"], page: 2, info: "heme is attached which is a complex of iron in ferrous form and protoporphyrin." },
+        { q: "Which of the following increases Hb values?", a: "High altitude", options: ["Anemia", "Hemorrhage", "High altitude", "Fluid therapy"], page: 3, info: "Increased values: High altitude, Young age and Dehydration." },
+        { q: "Dehydration leads to a decrease in hemoglobin concentration.", a: "False", options: ["True", "False"], page: 3, info: "Dehydration is listed under Increased values." },
+        { q: "Malignant tumors can cause decreased Hb values.", a: "True", options: ["True", "False"], page: 3, info: "Decreased values: ...and Malignant tumors." },
+        { q: "Blood parasites cause an increase in Hb levels.", a: "False", options: ["True", "False"], page: 3, info: "Blood parasites are listed under Decreased values." },
+        { q: "The Sahli method is also known as the Acid Hematin method.", a: "True", options: ["True", "False"], page: 3, info: "Acid Hematin (Sahli) Method." },
+        { q: "In the Sahli method, Hb is converted into:", a: "Acid hematin", options: ["Hemoglobincyanide", "Acid hematin", "Oxyhemoglobin", "Carboxyhemoglobin"], page: 3, info: "all the Hb is converted into brown-colored acid hematin." },
+        { q: "What is the concentration of HCl used in the Sahli method?", a: "0.1 N", options: ["1.0 N", "0.1 N", "0.5 N", "0.01 N"], page: 3, info: "Blood + 0.1 N HCl -> Acid Hematin." },
+        { q: "The Sahli method measures Hb concentration in grams per deciliter (g/dl).", a: "True", options: ["True", "False"], page: 3, info: "concentration of Hb is measured in grams per deciliter (g/dl)." },
+        { q: "Which tool is used for stirring in the Sahli method?", a: "Glass rod", options: ["Glass dropper", "Pipette", "Glass rod", "Thermometer"], page: 4, info: "Materials: Glass rod for stirring." },
+        { q: "The hemoglobin pipette is marked to contain how much blood?", a: "20 microliters", options: ["10 microliters", "20 microliters", "50 microliters", "100 microliters"], page: 4, info: "Pipette marked to contain 20 microliters (µl) of blood." },
+        { q: "Step 1 of Sahli procedure: Fill the tube with 0.1 N HCl to which mark?", a: "2 or 10", options: ["2 or 10", "20", "100", "0.5"], page: 4, info: "1. Fill the graduated tube to mark (2 or 10) with 0.1 N HCl." },
+        { q: "How long should the tube sit to ensure complete reaction?", a: "10 min", options: ["2 min", "5 min", "10 min", "20 min"], page: 4, info: "4. Place the tube in the hemoglobinometer for 10 min to ensure complete reaction." },
+        { q: "What is added drop by drop until the color matches the standard?", a: "Distilled water", options: ["HCl", "Saline", "Distilled water", "Alcohol"], page: 4, info: "5. Add drop by drop D.W. until the color in graduated tube is identical." },
+        { q: "Anemia is a cause for decreased hemoglobin levels.", a: "True", options: ["True", "False"], page: 3, info: "Decreased values: Fluid therapy, Anemia, Hemorrhage..." },
+        { q: "Hb values are the same for males and females.", a: "False", options: ["True", "False"], page: 2, info: "The normal value of Hb varies according to the age and sex." },
+        { q: "What is the HiCN method used for?", a: "Measuring hemoglobin", options: ["Counting RBC", "Measuring hemoglobin", "Measuring WBC", "Fixing slides"], page: 3, info: "Methods for measuring hemoglobin include: Haemoglobincyanide (HiCN) method." },
+        { q: "The intensity of the brown color in Sahli method is measured visually.", a: "True", options: ["True", "False"], page: 3, info: "intensity of the color is measured by comparing it with a standard solution. This is done visually." },
+        { q: "Globin chains in Hb consist of two pairs of similar chains.", a: "True", options: ["True", "False"], page: 2, info: "polypeptide chains called globin chains... consisting of two pairs of similar polypeptide chains." },
+        { q: "Normal Hb range for an adult female is:", a: "12-16 g/dl", options: ["10-14 g/dl", "12-16 g/dl", "14-18 g/dl", "16-20 g/dl"], page: 2, info: "Normal ranges: Female 12-16 g/dl." },
+        { q: "Fluid therapy can cause an increase in Hb concentration.", a: "False", options: ["True", "False"], page: 3, info: "Fluid therapy is listed under Decreased values." },
+        { q: "BGA stands for Blood Gas Analyser.", a: "True", options: ["True", "False"], page: 3, info: "Blood gas analyser (BGA)." },
+        { q: "Heme contains iron in the ferric form.", a: "False", options: ["True", "False"], page: 2, info: "heme is attached which is a complex of iron in ferrous form." },
+        { q: "Young age is a factor for increased Hb values.", a: "True", options: ["True", "False"], page: 3, info: "Increased values: High altitude, Young age and Dehydration." },
+        { q: "The graduated tube is part of the Sahli hemoglobinometer.", a: "True", options: ["True", "False"], page: 4, info: "Materials: Graduated tube." },
+        { q: "Sahli method matches colors against a standard solution.", a: "True", options: ["True", "False"], page: 3, info: "comparing it with a standard solution." },
+        { q: "The brown color formed is due to acid hematin.", a: "True", options: ["True", "False"], page: 3, info: "Hb is converted into brown-colored acid hematin." },
+        { q: "Hb is the major constituent of the red cell cytoplasm.", a: "True", options: ["True", "False"], page: 2, info: "Hemoglobin is the major constituent of the red cell cytoplasm." },
+        { q: "Hemorrhage leads to increased Hb concentration.", a: "False", options: ["True", "False"], page: 3, info: "Hemorrhage is listed under Decreased values." },
+        { q: "The tip of the pipette should be dipped in HCl to blow the blood.", a: "True", options: ["True", "False"], page: 4, info: "3. Dip the tip of the pipette in the graduated tube to blow the blood into the tube." }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+
+    function initQuiz() {
+        shuffledQuestions = questions.sort(() => Math.random() - 0.5);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        document.getElementById("progress").innerText = `السؤال ${currentQuestionIndex + 1} من 35`;
+        document.getElementById("question").innerText = qData.q;
+        
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        
+        qData.options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.classList.add("option-btn");
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, qData.a);
+            optionsDiv.appendChild(btn);
+        });
+
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+    }
+
+    function checkAnswer(selected, correct) {
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const feedbackDiv = document.getElementById("feedback");
+        const optionsButtons = document.querySelectorAll(".option-btn");
+        
+        optionsButtons.forEach(btn => btn.disabled = true);
+
+        if (selected === correct) {
+            score++;
+            document.getElementById("score").innerText = score;
+            feedbackDiv.innerHTML = "<strong>Correct Answer! ✨</strong>";
+            feedbackDiv.className = "feedback correct";
+        } else {
+            feedbackDiv.innerHTML = `<strong>Wrong Answer ❌</strong><br>${qData.info}<br><span class="source-tag">المصدر: صفحة رقم ${qData.page}</span>`;
+            feedbackDiv.className = "feedback wrong";
+        }
+
+        feedbackDiv.style.display = "block";
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            showQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-body").style.display = "none";
+        const resultScreen = document.getElementById("result-screen");
+        resultScreen.style.display = "block";
+        document.getElementById("final-score").innerText = `انتهيت! نتيجتك هي ${score} من 35`;
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>
